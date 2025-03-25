@@ -16,14 +16,14 @@ GameManager::GameManager()
 	ground.setFillColor(sf::Color::Green);
 	ground.setPosition(0.f, 550.f);
 
-	obstacle1.setSize(sf::Vector2f(200.f, 20.f));
+	obstacle1.setSize(sf::Vector2f(50.f, 50.f));
 	obstacle1.setFillColor(sf::Color::Red);
-	obstacle1.setPosition(300.f, 530.f);
+	obstacle1.setPosition(300.f, 500.f);
 
 
-	obstacle2.setSize(sf::Vector2f(200.f, 20.f));
+	obstacle2.setSize(sf::Vector2f(50.f, 50.f));
 	obstacle2.setFillColor(sf::Color::Red);
-	obstacle2.setPosition(1100.f, 530.f);
+	obstacle2.setPosition(1100.f, 500.f);
 }
 
 void GameManager::run() {

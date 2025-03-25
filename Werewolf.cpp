@@ -12,6 +12,7 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime) {
 	sf::Vector2f direction;
 	float length;
 
+	float groundY = patrolStart.y;
 	float range = 300.f;
 
 	sf::Vector2f playerDirection = player.getPosition() - shape.getPosition();
@@ -32,6 +33,10 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime) {
 
 		if (length < 1.f) movingToEnd = !movingToEnd;
 	}
+
+	sf::Vector2f pos = shape.getPosition();
+	pos.y = groundY;
+	shape.setPosition(pos);
 }
 
 const sf::RectangleShape& Werewolf::getShape() const {
