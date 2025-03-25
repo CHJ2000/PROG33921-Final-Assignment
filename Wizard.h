@@ -2,6 +2,9 @@
 #define WIZARD_H
 
 #include <SFML/Graphics.hpp>
+#include <vector>
+#include "Projectile.h"
+
 
 class Wizard {
 
@@ -10,10 +13,11 @@ public:
 	void move(sf::Vector2f direction, float deltaTime, float speed);
 	void jump();
 	void update(float deltaTime);
-	void attack(std::vector<sf::CircleShape>& projectiles);
+	void attack(std::vector<Projectile>& projectiles);
 	void takeDamage();
 	sf::CircleShape& getShape();
 	int getHealth() const;
+	bool isAlive() const;
 
 private:
 	sf::CircleShape shape;

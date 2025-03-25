@@ -1,5 +1,6 @@
 #include "Wizard.h"
 #include <stdexcept>
+#include "Projectile.h"
 
 Wizard::Wizard(float startX, float startY) : health(3), isJumping(false) {
 	shape.setRadius(20.f);
@@ -29,11 +30,13 @@ void Wizard::update(float deltaTime) {
 	}
 }
 
-void Wizard::attack(std::vector<sf::CircleShape>& projectiles) {
-	sf::CircleShape projectile(5.f);
-	projectile.setFillColor(sf::Color::Yellow);
-	projectile.setPosition(shape.getPosition().x + shape.getRadius(), shape.getPosition().y + shape.getRadius());
-	projectiles.push_back(projectile);
+void Wizard::attack(std::vector<Projectile>& projectiles) {
+	Projectile newProjectile(
+		shape.getPosition().x + shape.getRadius(),
+		shape.getPosition().y + shape.getRadius(),
+		300.f
+	);
+	projectiles.push_back(newProjectile);
 }
 
 void Wizard::takeDamage() {
@@ -45,6 +48,10 @@ sf::CircleShape& Wizard::getShape() {
 }
 int Wizard::getHealth() const {
 	return health;
+}
+
+bool Wizard::isAlive() const {
+	return health > 0;
 }
 
 
