@@ -54,4 +54,9 @@ bool Wizard::isAlive() const {
 	return health > 0;
 }
 
+void Wizard::stopFalling() {
+	velocity.y = 0.f;
+	isJumping = false;
+}
+
 

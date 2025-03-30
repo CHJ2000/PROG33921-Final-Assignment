@@ -15,6 +15,7 @@ public:
 	void update(float deltaTime);
 	void attack(std::vector<Projectile>& projectiles);
 	void takeDamage();
+	void stopFalling();
 	sf::CircleShape& getShape();
 	int getHealth() const;
 	bool isAlive() const;

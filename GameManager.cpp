@@ -2,7 +2,7 @@
 #include <algorithm>
 
 GameManager::GameManager()
-	: window(sf::VideoMode(800, 600), "Ghosts 'n Goblins"), player(100.f, 500.f) {
+	: window(sf::VideoMode(800, 600), "Wizards 'n Werewolves"), player(100.f, 500.f) {
 	window.setFramerateLimit(60);
 
 	camera.setSize(800.f, 600.f);
@@ -17,12 +17,12 @@ GameManager::GameManager()
 	ground.setPosition(0.f, 550.f);
 
 	obstacle1.setSize(sf::Vector2f(50.f, 50.f));
-	obstacle1.setFillColor(sf::Color::Red);
+	obstacle1.setFillColor(sf::Color::Yellow);
 	obstacle1.setPosition(300.f, 500.f);
 
 
 	obstacle2.setSize(sf::Vector2f(50.f, 50.f));
-	obstacle2.setFillColor(sf::Color::Red);
+	obstacle2.setFillColor(sf::Color::Yellow);
 	obstacle2.setPosition(1100.f, 500.f);
 }
 
@@ -62,8 +62,28 @@ void GameManager::update(float deltaTime) {
 	player.move(movement, deltaTime, 200.f);
 	player.update(deltaTime);
 
+	const sf::FloatRect playerBounds = player.getShape().getGlobalBounds();
+
+
+	const sf::FloatRect obstacle1Bounds = obstacle1.getGlobalBounds();
+	if (playerBounds.intersects(obstacle1Bounds)) {
+		if (playerBounds.top + playerBounds.height <= obstacle1Bounds.top + 10.f) {
+			player.getShape().setPosition(playerBounds.left, obstacle1Bounds.top - playerBounds.height);
+			player.stopFalling();
+		}
+		else {
+			if (movement.x > 0.f && playerBounds.left + playerBounds.width > obstacle1Bounds.left) {
+				player.getShape().setPosition(obstacle1Bounds.left - playerBounds.width, playerBounds.top);
+			}
+			if (movement.x < 0.f && playerBounds.left < obstacle1Bounds.left + obstacle1Bounds.width) {
+				player.getShape().setPosition(obstacle1Bounds.left + obstacle1Bounds.width, playerBounds.top);
+			}
+		}
+	}
+
+
 	for (auto& enemy : enemies) {
-		enemy.update(player.getShape(), deltaTime);
+		enemy.update(player.getShape(), deltaTime, obstacle1);
 	}
 
 	for (auto& projectile : projectiles) {
@@ -94,6 +114,16 @@ void GameManager::render() {
 }
 
 void GameManager::checkCollisions() {
+	for (auto it = projectiles.begin(); it != projectiles.end();) {
+		const sf::FloatRect projectileBounds = it->getShape().getGlobalBounds();
+		if (projectileBounds.intersects(obstacle1.getGlobalBounds()) || projectileBounds.intersects(obstacle2.getGlobalBounds())) {
+			it = projectiles.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+
 	for (auto& enemy : enemies) {
 		if (player.getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
 			window.close();

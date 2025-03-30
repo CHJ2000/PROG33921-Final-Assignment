@@ -10,7 +10,7 @@
 class Werewolf {
 public:
 	Werewolf(float startX, float startY, float patrolEndX);
-	void update(const sf::CircleShape& player, float deltaTime);
+	void update(const sf::CircleShape& player, float deltaTime, const sf::RectangleShape& obstacle1);
 	const sf::RectangleShape& getShape() const;
 	void takeDamage();
 	bool isAlive() const;
