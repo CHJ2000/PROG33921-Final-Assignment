@@ -131,6 +131,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="GameOverMenu.cpp" />
+    <ClCompile Include="InGameUI.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="PROG33921-Final-Assignment.cpp" />
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="Werewolf.cpp" />
@@ -138,6 +141,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="GameOverMenu.h" />
+    <ClInclude Include="InGameUI.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="Werewolf.h" />
     <ClInclude Include="Wizard.h" />

@@ -1,11 +1,30 @@
 #include "GameManager.h"
 #include <algorithm>
+#include <fstream>
 
 GameManager::GameManager()
-	: window(sf::VideoMode(800, 600), "Wizards 'n Werewolves"), player(100.f, 500.f) {
+	: window(sf::VideoMode(1000, 800), "Wizards 'n Werewolves"), player(100.f, 500.f) {
 	window.setFramerateLimit(60);
 
-	camera.setSize(800.f, 600.f);
+	std::ifstream file("Debug/assets/fonts/BlackwoodCastle.ttf");
+	if (!file) {
+		std::cerr << "Font file not found at the specified path!" << std::endl;
+	}
+	else {
+		std::cerr << "Font file successfully found!" << std::endl;
+	}
+	file.close();
+
+	if (!font.loadFromFile("Debug/assets/fonts/BlackwoodCastle.ttf")) {
+		std::cerr << "Failed to load font!" << std::endl;
+	}
+
+
+	mainMenuUI = new MainMenu(font);
+	inGameUI = new InGameUI(font);
+	gameOverUI = new GameOverMenu(font);
+
+	camera.setSize(1200.f, 900.f);
 	camera.setCenter(player.getShape().getPosition());
 
 	enemies.emplace_back(600.f, 500.f, 800.f);
@@ -27,17 +46,77 @@ GameManager::GameManager()
 }
 
 void GameManager::run() {
-	sf::Clock clock;
-
 	while (window.isOpen()) {
-		sf::Time deltaTime = clock.restart();
-
-		handleEvents();
-		update(deltaTime.asSeconds());
-		render();
+		mainMenu();
+		gameplay();
+		gameOver();
 	}
 }
 
+
+void GameManager::mainMenu() {
+	mainMenuUI->initialize(window);
+	while (window.isOpen()) {
+		window.clear();
+		mainMenuUI->display(window);
+
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed)
+				window.close();
+
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (mainMenuUI->isStartButtonClicked(window)) {
+					gameClock.restart();
+					return;
+				}
+				if (mainMenuUI->isExitButtonClicked(window)) {
+					window.close();
+				}
+			}
+		}
+	}
+}
+
+void GameManager::gameplay() {
+	while (window.isOpen()) {
+		float deltaTime = gameClock.restart().asSeconds();
+
+		handleEvents();
+		update(deltaTime);
+		render();
+
+		if (player.getHealth() <= 0) {
+			gameOver();
+			return;
+		}
+	}
+}
+
+void GameManager::gameOver() {
+	while (window.isOpen()) {
+		window.clear(sf::Color::Red);
+		gameOverUI->display(window, score, gameClock.getElapsedTime().asSeconds());
+
+		sf::Event event;
+		while (window.pollEvent(event)) {
+			if (event.type == sf::Event::Closed)
+				window.close();
+
+			if (event.type == sf::Event::MouseButtonPressed) {
+				if (gameOverUI->isRestartButtonClicked(window)) {
+					score = 0;
+					player.reset();
+					gameClock.restart();
+					return;
+				}
+				if (gameOverUI->isExitButtonClicked(window)) {
+					window.close();
+				}
+			}
+		}
+	}
+}
 void GameManager::handleEvents() {
 	sf::Event event;
 	while (window.pollEvent(event)) {
@@ -110,6 +189,10 @@ void GameManager::render() {
 	for (const auto& projectile : projectiles) {
 		window.draw(projectile.getShape());
 	}
+
+	float timeElapsed = gameClock.getElapsedTime().asSeconds();
+	inGameUI->update(score, timeElapsed);
+	inGameUI->render(window);
 	window.display();
 }
 
@@ -126,7 +209,11 @@ void GameManager::checkCollisions() {
 
 	for (auto& enemy : enemies) {
 		if (player.getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
-			window.close();
+			player.takeDamage();
+			if (player.getHealth() <= 0) {
+				gameOver();
+				return;
+			}
 		}
 	}
 

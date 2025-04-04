@@ -58,5 +58,9 @@ void Wizard::stopFalling() {
 	velocity.y = 0.f;
 	isJumping = false;
 }
+void Wizard::reset() {
+	health = 3;
+	shape.setPosition(100.f, 500.f);
+}
 
 

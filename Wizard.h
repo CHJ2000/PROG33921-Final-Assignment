@@ -19,6 +19,7 @@ public:
 	sf::CircleShape& getShape();
 	int getHealth() const;
 	bool isAlive() const;
+	void reset();
 
 private:
 	sf::CircleShape shape;
