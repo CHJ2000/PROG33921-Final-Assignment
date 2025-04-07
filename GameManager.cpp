@@ -19,18 +19,17 @@ GameManager::GameManager()
 		std::cerr << "Failed to load font!" << std::endl;
 	}
 
-
 	mainMenuUI = new MainMenu(font);
 	inGameUI = new InGameUI(font);
 	gameOverUI = new GameOverMenu(font);
 	currentState = GameState::MainMenu;
 
-	camera.setSize(1200.f, 900.f);
-	camera.setCenter(player.getShape().getPosition());
+	camera.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
+	camera.setCenter(player.getShape().getPosition().x, static_cast<float>(window.getSize().y) / 2.f);
 
-	ground.setSize(sf::Vector2f(2000.f, 50.f));
+	ground.setSize(sf::Vector2f(window.getSize().x * 2.f, 50.f));
 	ground.setFillColor(sf::Color::Green);
-	ground.setPosition(0.f, 550.f);
+	ground.setPosition(0.f, static_cast<float>(window.getSize().y) - ground.getSize().y);
 
 	score = 0;
 
@@ -56,7 +55,6 @@ void GameManager::run() {
 		window.display(); 
 	}
 }
-
 
 void GameManager::mainMenu() {
 	handleMainMenuEvents();
@@ -129,9 +127,7 @@ void GameManager::handleGameOverEvents() {
 		}
 		if (event.type == sf::Event::MouseButtonPressed) {
 			if (gameOverUI->isRestartButtonClicked(window)) {
-				score = 0;
-				player.reset();
-				gameClock.restart();
+				resetGame();
 				currentState = GameState::Playing;
 				return;
 			}
@@ -144,10 +140,11 @@ void GameManager::handleGameOverEvents() {
 }
 
 void GameManager::renderGameOver() {
-	window.clear();              
+	window.clear(sf::Color::Red);              
 	gameOverUI->display(window, score, finalTime);
 	window.display();
 }
+
 void GameManager::handleEvents() {
 	sf::Event event;
 	while (window.pollEvent(event)) {
@@ -186,6 +183,9 @@ void GameManager::update(float deltaTime) {
 	}
 
 	checkCollisions();
+	
+	float timeElapsed = gameClock.getElapsedTime().asSeconds();
+	inGameUI->update(score, timeElapsed, player.getHealth());
 
 	camera.setCenter(player.getShape().getPosition());
 	window.setView(camera);
@@ -252,6 +252,7 @@ void GameManager::spawnEntities(float playerX) {
 
 		}
 	}
+
 void GameManager::cleanUpEntities(float playerX) {
 	const float cleanupThreshold = 800.f;
 
@@ -272,6 +273,12 @@ void GameManager::updateGround(float playerX) {
 	if (playerX > ground.getPosition().x + ground.getSize().x - extensionThreshold) {
 		ground.setSize(sf::Vector2f(ground.getSize().x + extensionThreshold, ground.getSize().y));
 	}
+
+	if (playerX < ground.getPosition().x + extensionThreshold) {
+		ground.setPosition(ground.getPosition().x - extensionThreshold, ground.getPosition().y);
+		ground.setSize(sf::Vector2f(ground.getSize().x + extensionThreshold, ground.getSize().y));
+	}
+	ground.setPosition(ground.getPosition().x, static_cast<float>(window.getSize().y) - ground.getSize().y);
 }
 
 void GameManager::render() {
@@ -293,7 +300,7 @@ void GameManager::render() {
 	}
 
 	float timeElapsed = gameClock.getElapsedTime().asSeconds();
-	inGameUI->update(score, timeElapsed);
+	inGameUI->update(score, timeElapsed, player.getHealth());
 
 	inGameUI->render(window);
 	window.display();
@@ -349,6 +356,16 @@ void GameManager::checkCollisions() {
 	for (auto& enemy : enemies) {
 		if (player.getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
 			player.takeDamage();
+
+			const sf::Vector2f playerPosition = player.getShape().getPosition();
+			const sf::Vector2f enemyPosition = enemy.getShape().getPosition();
+
+			if (playerPosition.x < enemyPosition.x) {
+				player.getShape().setPosition(playerPosition.x - 50.f, playerPosition.y);
+			}
+			else {
+				player.getShape().setPosition(playerPosition.x + 50.f, playerPosition.y);
+			}
 			if (player.getHealth() <= 0) {
 				gameOver();
 				return;
@@ -371,4 +388,17 @@ void GameManager::checkCollisions() {
 	enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Werewolf& enemy) {
 		return !enemy.isAlive();
 	}), enemies.end());
+}
+
+void GameManager::resetGame() {
+	score = 0;
+	player.reset();
+	gameClock.restart();
+
+	obstacles.clear();
+	enemies.clear();
+	projectiles.clear();
+
+	initializeEntities(player.getShape().getPosition().x);
+	spawnEntities(player.getShape().getPosition().x);
 }

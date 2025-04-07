@@ -41,7 +41,7 @@ void Wizard::attack(std::vector<Projectile>& projectiles) {
 }
 
 void Wizard::takeDamage() {
-	health--;
+	health -= 1;
 }
 
 sf::CircleShape& Wizard::getShape() {

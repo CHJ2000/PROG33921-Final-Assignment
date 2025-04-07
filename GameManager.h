@@ -32,6 +32,7 @@ private:
 	void spawnEntities(float playerX);
 	void cleanUpEntities(float playerX);
 	void updateGround(float playerX);
+	void resetGame();
 	enum class GameState {Playing, GameOver, MainMenu};
 	GameState currentState = GameState::Playing;
 

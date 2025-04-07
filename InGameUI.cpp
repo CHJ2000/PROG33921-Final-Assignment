@@ -11,6 +11,12 @@ InGameUI::InGameUI(sf::Font& font) {
 	timeText.setString("Time: 0s");
 	timeText.setCharacterSize(40);
 	timeText.setFillColor(sf::Color(255, 223, 0));
+
+	healthText.setFont(font);
+	healthText.setString("Health: 3");
+	healthText.setCharacterSize(40); 
+	healthText.setFillColor(sf::Color(255, 0, 0));
+
 }
 
 void InGameUI::initialize(sf::RenderWindow& window) {
@@ -29,11 +35,19 @@ void InGameUI::initialize(sf::RenderWindow& window) {
 	timeText.setPosition(
 		windowWidth - timeBounds.width - paddingX, paddingY
 	);
+
+	
+	sf::FloatRect healthBounds = healthText.getGlobalBounds();
+	healthText.setPosition(
+		paddingX, paddingY + scoreBounds.height + 10.f 
+	);
+
 }
 
-void InGameUI::update(int score, float timeElapsed) {
+void InGameUI::update(int score, float timeElapsed, int playerHealth) {
 	scoreText.setString("Score: " + std::to_string(score));
 	timeText.setString("Time: " + std::to_string(static_cast<int>(timeElapsed)) + "s");
+	healthText.setString("Health: " + std::to_string(playerHealth));
 }
 
 void InGameUI::render(sf::RenderWindow& window) {
@@ -41,4 +55,5 @@ void InGameUI::render(sf::RenderWindow& window) {
 	window.setView(uiView);
 	window.draw(scoreText);
 	window.draw(timeText);
+	window.draw(healthText);
 }
