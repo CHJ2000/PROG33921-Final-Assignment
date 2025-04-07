@@ -8,6 +8,7 @@ public:
 	InGameUI(sf::Font& font);
 	void update(int score, float time);
 	void render(sf::RenderWindow& window);
+	void initialize(sf::RenderWindow& window);
 
 private:
 	sf::Text scoreText;

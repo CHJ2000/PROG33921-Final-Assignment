@@ -17,6 +17,7 @@ public:
 	void takeDamage();
 	void stopFalling();
 	sf::CircleShape& getShape();
+	sf::Vector2f getVelocity() const;
 	int getHealth() const;
 	bool isAlive() const;
 	void reset();

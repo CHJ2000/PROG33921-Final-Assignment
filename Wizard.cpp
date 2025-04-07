@@ -1,6 +1,7 @@
 #include "Wizard.h"
 #include <stdexcept>
 #include "Projectile.h"
+#include <iostream>
 
 Wizard::Wizard(float startX, float startY) : health(3), isJumping(false) {
 	shape.setRadius(20.f);
@@ -46,6 +47,11 @@ void Wizard::takeDamage() {
 sf::CircleShape& Wizard::getShape() {
 	return shape;
 }
+
+sf::Vector2f Wizard::getVelocity() const {
+	return velocity;
+}
+
 int Wizard::getHealth() const {
 	return health;
 }

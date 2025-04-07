@@ -4,13 +4,15 @@
 
 #include <SFML\Graphics.hpp>
 #include <iostream>
+#include <vector>
+#include "Obstacle.h"
 
 
 
 class Werewolf {
 public:
 	Werewolf(float startX, float startY, float patrolEndX);
-	void update(const sf::CircleShape& player, float deltaTime, const sf::RectangleShape& obstacle1);
+	void update(const sf::CircleShape& player, float deltaTime, const std::vector<Obstacle>& obstacles);
 	const sf::RectangleShape& getShape() const;
 	void takeDamage();
 	bool isAlive() const;

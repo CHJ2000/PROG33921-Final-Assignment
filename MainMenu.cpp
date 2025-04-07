@@ -1,4 +1,5 @@
 #include "MainMenu.h"
+#include <iostream>
 
 MainMenu::MainMenu(sf::Font& font) {
 	titleText.setFont(font);
@@ -10,41 +11,38 @@ MainMenu::MainMenu(sf::Font& font) {
 	startButton.setString("Start");
 	startButton.setCharacterSize(50);
 	startButton.setFillColor(sf::Color::White);
-	/*startButton.setPosition(300.f, 200.f);*/
+	
 
 	exitButton.setFont(font);
 	exitButton.setString("Exit");
 	exitButton.setCharacterSize(50);
 	exitButton.setFillColor(sf::Color::White);
-	/*exitButton.setPosition(300.f, 300.f);*/
+	
 }
 
 void MainMenu::initialize(sf::RenderWindow& window) {
 	float windowWidth = static_cast<float>(window.getSize().x);
 	float windowHeight = static_cast<float>(window.getSize().y);
 
-	sf::FloatRect titleBounds = titleText.getGlobalBounds();
-	titleText.setPosition(
-		static_cast<float>((windowWidth - titleBounds.width) / 2.0),
-			static_cast<float>(windowHeight * 0.2)
-			);
+	sf::FloatRect titleBounds = titleText.getLocalBounds();
+	titleText.setOrigin(titleBounds.left + titleBounds.width / 2.0f, titleBounds.top + titleBounds.height / 2.0f);
+	titleText.setPosition(windowWidth / 2.0f, windowHeight * 0.2f);
 
-	sf::FloatRect startBounds = startButton.getGlobalBounds();
-	startButton.setPosition(
-		static_cast<float>((windowWidth - startBounds.width) / 2.0),
-		static_cast<float>(windowHeight * 0.4)
-	);
+	sf::FloatRect startBounds = startButton.getLocalBounds();
+	startButton.setOrigin(startBounds.left + startBounds.width / 2.0f, startBounds.top + startBounds.height / 2.0f);
+	startButton.setPosition(windowWidth / 2.0f, windowHeight * 0.4f);
 
-	sf::FloatRect exitBounds = exitButton.getGlobalBounds();
-	exitButton.setPosition(
-		static_cast<float>((windowWidth - exitBounds.width) / 2.0),
-		static_cast<float>(windowHeight * 0.5)
-	);
+	sf::FloatRect exitBounds = exitButton.getLocalBounds();
+	exitButton.setOrigin(exitBounds.left + exitBounds.width / 2.0f, exitBounds.top + exitBounds.height / 2.0f);
+	exitButton.setPosition(windowWidth / 2.0f, windowHeight * 0.5f);
+
 
 }
 
 void MainMenu::display(sf::RenderWindow& window) {
+	
 	window.clear(sf::Color(10, 10, 50));
+
 	window.draw(titleText);
 	window.draw(startButton);
 	window.draw(exitButton);

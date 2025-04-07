@@ -1,4 +1,5 @@
 #include "GameOverMenu.h"
+#include <iostream>
 
 GameOverMenu::GameOverMenu(sf::Font& font) {
 	gameOverText.setFont(font);
@@ -17,11 +18,22 @@ GameOverMenu::GameOverMenu(sf::Font& font) {
 	restartButton.setCharacterSize(50);
 	restartButton.setFillColor(sf::Color::White);
 	restartButton.setPosition(200.f, 500.f);
+
+	exitButton.setFont(font);
+	exitButton.setString("Exit");
+	exitButton.setCharacterSize(50);
+	exitButton.setFillColor(sf::Color::White);
+	exitButton.setPosition(200.f, 600.f);
+
+	timeText.setFont(font);
+	timeText.setCharacterSize(50);
+	timeText.setFillColor(sf::Color::White);
+	timeText.setPosition(200.f, 320.f);
 }
 
 void GameOverMenu::display(sf::RenderWindow& window, int finalScore, float finalTime) {
 	scoreText.setString("Final Score: " + std::to_string(finalScore));
-	sf::Text timeText;
+
 	timeText.setFont(*gameOverText.getFont());
 	timeText.setCharacterSize(50);
 	timeText.setFillColor(sf::Color::White);

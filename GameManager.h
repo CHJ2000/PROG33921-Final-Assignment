@@ -8,6 +8,7 @@
 #include "MainMenu.h"
 #include "InGameUI.h"
 #include "GameOverMenu.h"
+#include "Obstacle.h"
 
 
 class GameManager {
@@ -17,12 +18,21 @@ public:
 
 private:
 	void mainMenu();
-	void gameplay();
+	void handleMainMenuEvents();
+	void renderMainMenu();
+	void gamePlay();
 	void gameOver();
+	void handleGameOverEvents();
+	void renderGameOver();
 	void handleEvents();
 	void update(float deltaTime);
 	void render();
 	void checkCollisions();
+	void spawnEntities(float playerX);
+	void cleanUpEntities(float playerX);
+	void updateGround(float playerX);
+	enum class GameState {Playing, GameOver, MainMenu};
+	GameState currentState = GameState::Playing;
 
 	sf::RenderWindow window;
 	sf::Font font;
@@ -30,9 +40,9 @@ private:
 	Wizard player;
 	std::vector<Werewolf> enemies;
 	std::vector<Projectile> projectiles;
+	std::vector<Obstacle> obstacles;
 	sf::RectangleShape ground;
-	sf::RectangleShape obstacle1;
-	sf::RectangleShape obstacle2;
+
 
 	MainMenu* mainMenuUI;
 	InGameUI* inGameUI;
@@ -40,6 +50,7 @@ private:
 
 	int score;
 	sf::Clock gameClock;
+	float finalTime = 0;
 
 };
 #endif

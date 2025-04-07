@@ -1,5 +1,6 @@
 #include "Werewolf.h"
 #include <cmath>
+#include "Obstacle.h"
 
 Werewolf::Werewolf(float startX, float startY, float patrolEndX)
 : patrolStart(startX, startY), patrolEnd(patrolEndX, startY), movingToEnd(true), health(3) {
@@ -8,11 +9,10 @@ Werewolf::Werewolf(float startX, float startY, float patrolEndX)
 	shape.setPosition(startX, startY);
 }
 
-void Werewolf::update(const sf::CircleShape& player, float deltaTime, const sf::RectangleShape& obstacle1) {
+void Werewolf::update(const sf::CircleShape& player, float deltaTime, const std::vector<Obstacle>& obstacles) {
 	sf::Vector2f direction;
 	float length;
 
-	//const float groundY = patrolStart.y;
 	float range = 300.f;
 
 	sf::Vector2f playerDirection = player.getPosition() - shape.getPosition();
@@ -23,7 +23,7 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime, const sf::
 		direction.y = 0.f;
 		length = std::sqrt(direction.x * direction.x);
 		if (length != 0) direction /= length;
-		float speed = 150.f;
+		float speed = 100.f;
 		shape.move(direction * speed * deltaTime);
 	}
 	else {
@@ -31,21 +31,22 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime, const sf::
 		direction.y = 0.f;
 		length = std::sqrt(direction.x * direction.x);
 		if (length != 0) direction /= length;
-		float speed = 150.f;
+		float speed = 100.f;
 		shape.move(direction * speed * deltaTime);
 
 		if (length < 1.f) movingToEnd = !movingToEnd;
 	}
 
-	const sf::FloatRect enemyBounds = shape.getGlobalBounds();
-	const sf::FloatRect obstacle1Bounds = obstacle1.getGlobalBounds();
-
-	if (enemyBounds.intersects(obstacle1Bounds)) {
-		if (direction.x > 0.f && enemyBounds.left + enemyBounds.width > obstacle1Bounds.left) {
-			shape.setPosition(obstacle1Bounds.left - enemyBounds.width, enemyBounds.top);
-		}
-		if (direction.x < 0.f && enemyBounds.left < obstacle1Bounds.left + obstacle1Bounds.width) {
-			shape.setPosition(obstacle1Bounds.left + obstacle1Bounds.width, enemyBounds.top);
+	for (const auto& obstacle : obstacles) {
+		const sf::FloatRect enemyBounds = shape.getGlobalBounds();
+		const sf::FloatRect obstacleBounds = obstacle.getShape().getGlobalBounds();
+		if (enemyBounds.intersects(obstacleBounds)) {
+			if (direction.x > 0.f && enemyBounds.left + enemyBounds.width > obstacleBounds.left) {
+				shape.setPosition(obstacleBounds.left - enemyBounds.width, enemyBounds.top);
+			}
+			if (direction.x < 0.f && enemyBounds.left < obstacleBounds.left + obstacleBounds.width) {
+				shape.setPosition(obstacleBounds.left + obstacleBounds.width, enemyBounds.top);
+			}
 		}
 	}
 }
