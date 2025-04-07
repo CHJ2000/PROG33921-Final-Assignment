@@ -16,6 +16,7 @@ public:
 	void attack(std::vector<Projectile>& projectiles);
 	void takeDamage();
 	void stopFalling();
+	void stopMovingHorizontally();
 	sf::CircleShape& getShape();
 	sf::Vector2f getVelocity() const;
 	int getHealth() const;

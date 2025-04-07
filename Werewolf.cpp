@@ -23,7 +23,7 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime, const std:
 		direction.y = 0.f;
 		length = std::sqrt(direction.x * direction.x);
 		if (length != 0) direction /= length;
-		float speed = 100.f;
+		float speed = 75.f;
 		shape.move(direction * speed * deltaTime);
 	}
 	else {
@@ -31,7 +31,7 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime, const std:
 		direction.y = 0.f;
 		length = std::sqrt(direction.x * direction.x);
 		if (length != 0) direction /= length;
-		float speed = 100.f;
+		float speed = 75.f;
 		shape.move(direction * speed * deltaTime);
 
 		if (length < 1.f) movingToEnd = !movingToEnd;

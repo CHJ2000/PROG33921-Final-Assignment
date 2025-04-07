@@ -28,13 +28,11 @@ GameManager::GameManager()
 	camera.setSize(1200.f, 900.f);
 	camera.setCenter(player.getShape().getPosition());
 
-	//enemies.emplace_back(600.f, 500.f, 800.f);
-	//enemies.emplace_back(1200.f, 500.f, 1400.f);
-	//enemies.emplace_back(1800.f, 500.f, 2000.f);
-
 	ground.setSize(sf::Vector2f(2000.f, 50.f));
 	ground.setFillColor(sf::Color::Green);
 	ground.setPosition(0.f, 550.f);
+
+	score = 0;
 
 }
 
@@ -97,6 +95,8 @@ void GameManager::gamePlay() {
 	inGameUI->initialize(window);
 	gameClock.restart();
 	sf::Clock frameClock;
+
+	spawnEntities(player.getShape().getPosition().x);
 
 	while (window.isOpen()) {
 		float deltaTime = frameClock.restart().asSeconds();
@@ -191,29 +191,46 @@ void GameManager::update(float deltaTime) {
 }
 
 void GameManager::spawnEntities(float playerX) {
-	const float respawnThreshold = 500.f;
 	const float obstacleWidth = 50.f;
 	const float obstacleHeight = 50.f;
+	const float spacing = 600.f;
+	const float offSceenDistance = 1500.f;
 
-	if (obstacles.empty() || playerX > obstacles.back().getShape().getPosition().x + respawnThreshold) {
-		float obstacleX = obstacles.empty() ? playerX + 500.f : obstacles.back().getShape().getPosition().x + respawnThreshold;
-		float obstacleY = ground.getPosition().y - 50.f;
+	while (obstacles.size() < 2 || obstacles.back().getShape().getPosition().x < playerX + offSceenDistance) {
+		float obstacleX = obstacles.empty()
+			? playerX + offSceenDistance :
+			obstacles.back().getShape().getPosition().x + spacing;
+		float obstacleY = ground.getPosition().y - obstacleHeight;
+
 		Obstacle newObstacle(obstacleX, obstacleY, obstacleWidth, obstacleHeight);
 		obstacles.push_back(newObstacle);
-		std::cerr << "Obstacle spawned at: " << newObstacle.getShape().getPosition().x << ", " << newObstacle.getShape().getPosition().y << std::endl;
-	}
-	if (enemies.empty() || playerX > enemies.back().getShape().getPosition().x + respawnThreshold) {
-		float enemyX = enemies.empty() ? playerX + 400.f : enemies.back().getShape().getPosition().x + respawnThreshold;
-		float patrolStartX = enemyX - 100.f;
-		float patrolEndX = enemyX + 100.f;
-		Werewolf newEnemy(patrolStartX, 500.f, patrolEndX);
-		enemies.push_back(newEnemy);
-		std::cerr << "Enemy spawned at: " << enemyX << ", 500" << std::endl;
-	}
-}
+		std::cerr << "Obstacle spawned off-screen at: " << obstacleX << ", " << obstacleY << std::endl;
 
+		Obstacle* firstObstacle = nullptr;
+		Obstacle* secondObstacle = nullptr;
+
+		for(size_t i = 0; i < obstacles.size() - 1; ++i) {
+			if (obstacles[i].getShape().getPosition().x > playerX) {
+				firstObstacle = &obstacles[i];
+				secondObstacle = &obstacles[i + 1];
+				break;
+			}
+		}
+		if (firstObstacle && secondObstacle && enemies.empty()) {
+			float enemyX = (firstObstacle->getShape().getPosition().x + secondObstacle->getShape().getPosition().x) / 2.f;
+			float patrolStartX = firstObstacle->getShape().getPosition().x + obstacleWidth;
+			float patrolEndX = secondObstacle->getShape().getPosition().x - obstacleWidth;
+
+			Werewolf newEnemy(patrolStartX, 500.f, patrolEndX);
+			enemies.push_back(newEnemy);
+			std::cerr << "Enemy spawned at (off-screen): " << enemyX
+				<< " with patrol between " << patrolStartX << " and " << patrolEndX << std::endl;
+			}
+
+		}
+	}
 void GameManager::cleanUpEntities(float playerX) {
-	const float cleanupThreshold = 400.f;
+	const float cleanupThreshold = 800.f;
 
 	obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(),
 		[playerX, cleanupThreshold](const Obstacle& obstacle) {
@@ -222,12 +239,12 @@ void GameManager::cleanUpEntities(float playerX) {
 
 	enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
 		[playerX, cleanupThreshold](const Werewolf& enemy) {
-			return enemy.getShape().getPosition().x < playerX - cleanupThreshold;
+			return enemy.getShape().getPosition().x < playerX - cleanupThreshold && enemy.isAlive();
 		}), enemies.end());
 }
 
 void GameManager::updateGround(float playerX) {
-	const float extensionThreshold = 500.f;
+	const float extensionThreshold = 1500.f;
 
 	if (playerX > ground.getPosition().x + ground.getSize().x - extensionThreshold) {
 		ground.setSize(sf::Vector2f(ground.getSize().x + extensionThreshold, ground.getSize().y));
@@ -279,25 +296,32 @@ void GameManager::checkCollisions() {
 
 	const sf::FloatRect playerBounds = player.getShape().getGlobalBounds();
 	for (const auto& obstacle : obstacles) {
-		if (playerBounds.intersects(obstacle.getShape().getGlobalBounds())) {
-			if (playerBounds.top + playerBounds.height <= obstacle.getShape().getPosition().y + 10.f) {
-				// Landing on the obstacle
-				player.getShape().setPosition(playerBounds.left, obstacle.getShape().getPosition().y - playerBounds.height);
-				player.stopFalling(); // Stop the player from falling further
+		const sf::FloatRect obstacleBounds = obstacle.getShape().getGlobalBounds();
+
+		if (playerBounds.intersects(obstacleBounds)) {
+			if (playerBounds.top + playerBounds.height <= obstacleBounds.top + 10.f &&
+				player.getVelocity().y > 0) {
+				player.getShape().setPosition(playerBounds.left, obstacleBounds.top - playerBounds.height);
+				player.stopFalling();
 			}
-			else {
-				// Colliding from the sides
-				if (player.getVelocity().x > 0.f && playerBounds.left + playerBounds.width > obstacle.getShape().getPosition().x) {
-					// Collision from the right
-					player.getShape().setPosition(obstacle.getShape().getPosition().x - playerBounds.width, playerBounds.top);
-				}
-				else if (player.getVelocity().x < 0.f && playerBounds.left < obstacle.getShape().getPosition().x + obstacle.getShape().getSize().x) {
-					// Collision from the left
-					player.getShape().setPosition(obstacle.getShape().getPosition().x + obstacle.getShape().getSize().x, playerBounds.top);
+			else if (playerBounds.left + playerBounds.width > obstacleBounds.left && 
+					playerBounds.left < obstacleBounds.left && 
+					playerBounds.top + playerBounds.height > obstacleBounds.top &&
+					playerBounds.top < obstacleBounds.top + obstacleBounds.height)
+				 {
+					player.getShape().setPosition(obstacleBounds.left - playerBounds.width - 0.1f, playerBounds.top);
+					player.stopMovingHorizontally();
+				 }
+				else if (playerBounds.left < obstacleBounds.left + obstacleBounds.width && 
+						playerBounds.left + playerBounds.width > obstacleBounds.left + obstacleBounds.width && 
+						playerBounds.top + playerBounds.height > obstacleBounds.top &&
+						playerBounds.top < obstacleBounds.top + obstacleBounds.height) 
+				{
+					player.getShape().setPosition(obstacleBounds.left + obstacleBounds.width + 0.1f, playerBounds.top);
+					player.stopMovingHorizontally();
 				}
 			}
 		}
-	}
 
 	for (auto& enemy : enemies) {
 		if (player.getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {

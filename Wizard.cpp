@@ -64,6 +64,10 @@ void Wizard::stopFalling() {
 	velocity.y = 0.f;
 	isJumping = false;
 }
+
+void Wizard::stopMovingHorizontally() {
+	velocity.x = 0.f;
+}
 void Wizard::reset() {
 	health = 3;
 	shape.setPosition(100.f, 500.f);
