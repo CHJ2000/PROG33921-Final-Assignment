@@ -28,6 +28,7 @@ private:
 	void update(float deltaTime);
 	void render();
 	void checkCollisions();
+	void initializeEntities(float playerX);
 	void spawnEntities(float playerX);
 	void cleanUpEntities(float playerX);
 	void updateGround(float playerX);

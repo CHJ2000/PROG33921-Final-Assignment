@@ -96,6 +96,7 @@ void GameManager::gamePlay() {
 	gameClock.restart();
 	sf::Clock frameClock;
 
+	initializeEntities(player.getShape().getPosition().x);
 	spawnEntities(player.getShape().getPosition().x);
 
 	while (window.isOpen()) {
@@ -188,6 +189,28 @@ void GameManager::update(float deltaTime) {
 
 	camera.setCenter(player.getShape().getPosition());
 	window.setView(camera);
+}
+
+void GameManager::initializeEntities(float playerX) {
+	const float obstacleWidth = 50.f;
+	const float obstacleHeight = 50.f;
+
+	float obstacleX1 = playerX + 400.f;
+	float obstacleY1 = ground.getPosition().y - obstacleHeight;
+	Obstacle staticObstacle1(obstacleX1, obstacleY1, obstacleWidth, obstacleHeight);
+	obstacles.push_back(staticObstacle1);
+
+	float obstacleX2 = playerX + 800.f;
+	float obstacleY2 = ground.getPosition().y - obstacleHeight;
+	Obstacle staticObstacle2(obstacleX2, obstacleY2, obstacleWidth, obstacleHeight);
+	obstacles.push_back(staticObstacle2);
+
+	float enemyX = (obstacles[0].getShape().getPosition().x + obstacles[1].getShape().getPosition().x) / 2.f;
+	float patrolStartX = obstacles[0].getShape().getPosition().x + obstacleWidth;
+	float patrolEndX = obstacles[1].getShape().getPosition().x - obstacleWidth;
+
+	Werewolf staticEnemy(patrolStartX, 500.f, patrolEndX);
+	enemies.push_back(staticEnemy);
 }
 
 void GameManager::spawnEntities(float playerX) {
