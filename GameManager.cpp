@@ -360,6 +360,7 @@ void GameManager::checkCollisions() {
 		for (auto it = projectiles.begin(); it != projectiles.end();) {
 			if (it->getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
 				enemy.takeDamage();
+				score += 15;
 				it = projectiles.erase(it);
 			}
 			else {
