@@ -9,6 +9,7 @@
 #include "InGameUI.h"
 #include "GameOverMenu.h"
 #include "Obstacle.h"
+#include "Boss.h"
 
 
 class GameManager {
@@ -30,6 +31,8 @@ private:
 	void checkCollisions();
 	void initializeEntities(float playerX);
 	void spawnEntities(float playerX);
+	void spawnBoss(float playerX);
+	void renderBossHealth(sf::RenderWindow& window);
 	void cleanUpEntities(float playerX);
 	void updateGround(float playerX);
 	void resetGame();
@@ -43,6 +46,7 @@ private:
 	std::vector<Werewolf> enemies;
 	std::vector<Projectile> projectiles;
 	std::vector<Obstacle> obstacles;
+	std::vector<Boss> bosses;
 	sf::RectangleShape ground;
 
 

@@ -1,6 +1,7 @@
 #include "GameManager.h"
 #include <algorithm>
 #include <fstream>
+#include "Boss.h"
 
 GameManager::GameManager()
 	: window(sf::VideoMode(1000, 600), "Wizards 'n Werewolves"), player(100.f, 500.f) {
@@ -182,6 +183,14 @@ void GameManager::update(float deltaTime) {
 		projectile.update(deltaTime);
 	}
 
+	for (auto& boss : bosses) {
+		boss.move(deltaTime, player.getShape().getPosition(), obstacles);
+	}
+
+	if (score >= 500 && bosses.empty()) {
+		spawnBoss(player.getShape().getPosition().x);
+	}
+
 	checkCollisions();
 	
 	float timeElapsed = gameClock.getElapsedTime().asSeconds();
@@ -270,6 +279,36 @@ void GameManager::cleanUpEntities(float playerX) {
 		}), enemies.end());
 }
 
+void GameManager::spawnBoss(float playerX) {
+	if (score >= 500 && bosses.empty()) {
+		const float bossWidth = 100.f;
+		const float bossHeight = 200.f;
+		sf::Vector2f bossPosition(playerX + 1000.f, ground.getPosition().y - bossHeight);
+
+		Boss newBoss(bossPosition.x, bossPosition.y, bossWidth, bossHeight, 50.f, 0.f);
+		bosses.push_back(newBoss);
+	}
+}
+
+void GameManager::renderBossHealth(sf::RenderWindow& window) {
+
+	if (!bosses.empty()) {
+		const Boss& boss = bosses[0];
+
+		sf::RectangleShape healthBar;
+		healthBar.setSize(sf::Vector2f(boss.getHealth() * 2, 20.f));
+		healthBar.setFillColor(sf::Color::Red);
+
+		const sf::Vector2f viewCenter = window.getView().getCenter();
+		const sf::Vector2f viewSize = window.getView().getSize();
+		float healthBarX = viewCenter.x - (viewSize.x / 2) + 20.f;
+		float healthBarY = viewCenter.y - (viewSize.y / 2) + 20.f;
+		healthBar.setPosition(healthBarX, healthBarY);
+		window.draw(healthBar);
+
+	}
+}
+
 void GameManager::updateGround(float playerX) {
 	const float extensionThreshold = 1500.f;
 
@@ -301,6 +340,11 @@ void GameManager::render() {
 	for (const auto& projectile : projectiles) {
 		window.draw(projectile.getShape());
 	}
+	for (const auto& boss : bosses) {
+		window.draw(boss.getShape());
+	}
+
+	renderBossHealth(window);
 
 	float timeElapsed = gameClock.getElapsedTime().asSeconds();
 	inGameUI->update(score, timeElapsed, player.getHealth());
@@ -358,7 +402,9 @@ void GameManager::checkCollisions() {
 
 	for (auto& enemy : enemies) {
 		if (player.getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
-			player.takeDamage();
+			float damageAmount = enemy.getIsBoss() ? 15.f : 5.f;
+			player.takeDamage(damageAmount);
+			score -= enemy.getIsBoss() ? 20 : 10;;
 
 			const sf::Vector2f playerPosition = player.getShape().getPosition();
 			const sf::Vector2f enemyPosition = enemy.getShape().getPosition();
@@ -379,8 +425,12 @@ void GameManager::checkCollisions() {
 	for (auto& enemy : enemies) {
 		for (auto it = projectiles.begin(); it != projectiles.end();) {
 			if (it->getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
-				enemy.takeDamage();
-				score += 15;
+				float damageAmount = 5.f;
+				enemy.takeDamage(damageAmount);
+				score += enemy.getIsBoss() ? 30 : 15;
+				if (!enemy.isAlive()) {
+					score += enemy.getIsBoss() ? 100 : 50;
+				}
 				it = projectiles.erase(it);
 			}
 			else {
@@ -388,9 +438,49 @@ void GameManager::checkCollisions() {
 			}
 		}
 	}
+
+	for (auto& boss : bosses) {
+		for (auto it = projectiles.begin(); it != projectiles.end();) {
+			if (it->getShape().getGlobalBounds().intersects(boss.getShape().getGlobalBounds())) {
+				boss.takeDamage(5.f);
+				score += boss.isAlive() ? 30 : 100;
+
+				it = projectiles.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
+	}
+
+	for (auto& boss : bosses) {
+		if (player.getShape().getGlobalBounds().intersects(boss.getShape().getGlobalBounds())) {
+			player.takeDamage(15.f);
+
+			sf::FloatRect playerBounds = player.getShape().getGlobalBounds();
+			sf::FloatRect bossBounds = boss.getShape().getGlobalBounds();
+
+			if (playerBounds.left + playerBounds.width > bossBounds.left && playerBounds.left < bossBounds.left){
+				player.getShape().setPosition(bossBounds.left - playerBounds.width, playerBounds.top);
+			}
+			else if (playerBounds.left < bossBounds.left + bossBounds.width && playerBounds.left + playerBounds.width > bossBounds.left + bossBounds.width){
+				player.getShape().setPosition(bossBounds.left + bossBounds.width, playerBounds.top);
+			}
+
+			if (player.getHealth() <= 0) {
+				gameOver();
+				return;
+			}
+		}
+	}
+
 	enemies.erase(std::remove_if(enemies.begin(), enemies.end(), [](const Werewolf& enemy) {
 		return !enemy.isAlive();
 	}), enemies.end());
+
+	bosses.erase(std::remove_if(bosses.begin(), bosses.end(), [](const Boss& boss) {
+		return !boss.isAlive();
+	}), bosses.end());
 }
 
 void GameManager::resetGame() {

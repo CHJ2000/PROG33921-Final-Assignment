@@ -14,7 +14,7 @@ public:
 	void jump();
 	void update(float deltaTime);
 	void attack(std::vector<Projectile>& projectiles);
-	void takeDamage();
+	void takeDamage(float damage);
 	void stopFalling();
 	void stopMovingHorizontally();
 	sf::CircleShape& getShape();
@@ -28,7 +28,7 @@ private:
 	sf::Vector2f velocity;
 	bool isJumping;
 	const float gravity = 500.f;
-	int health;
+	int health = 50.f;
 };
 
 #endif 

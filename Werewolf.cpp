@@ -3,7 +3,7 @@
 #include "Obstacle.h"
 
 Werewolf::Werewolf(float startX, float startY, float patrolEndX)
-: patrolStart(startX, startY), patrolEnd(patrolEndX, startY), movingToEnd(true), health(3) {
+: health(20), patrolStart(startX, startY), patrolEnd(patrolEndX, startY), movingToEnd(true), isBoss(false) {
 	shape.setSize({ 40.f, 40.f });
 	shape.setFillColor(sf::Color::Red);
 	shape.setPosition(startX, startY);
@@ -55,10 +55,17 @@ const sf::RectangleShape& Werewolf::getShape() const {
 	return shape;
 }
 
-void Werewolf::takeDamage() {
-	health--;
+void Werewolf::takeDamage(float damage) {
+	health -= static_cast<int>(damage);
+	if (health < 0) {
+		health = 0;
+	}
 }
 
 bool Werewolf::isAlive() const {
 	return health > 0;
+}
+
+bool Werewolf::getIsBoss() const {
+	return isBoss;
 }

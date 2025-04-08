@@ -3,12 +3,13 @@
 #include "Projectile.h"
 #include <iostream>
 
-Wizard::Wizard(float startX, float startY) : health(3), isJumping(false) {
+Wizard::Wizard(float startX, float startY) : health(50), isJumping(false) {
 	shape.setRadius(20.f);
 	shape.setFillColor(sf::Color::Blue);
 	shape.setPosition(startX, startY);
 	velocity = { 0.f, 0.f };
 }
+
 void Wizard::move(sf::Vector2f direction, float deltaTime, float speed) {
 	shape.move(direction * speed * deltaTime);
 }
@@ -40,8 +41,11 @@ void Wizard::attack(std::vector<Projectile>& projectiles) {
 	projectiles.push_back(newProjectile);
 }
 
-void Wizard::takeDamage() {
-	health -= 1;
+void Wizard::takeDamage(float damage) {
+	health -= static_cast<int>(damage);
+	if (health < 0) {
+		health = 0;
+	}
 }
 
 sf::CircleShape& Wizard::getShape() {
@@ -68,9 +72,12 @@ void Wizard::stopFalling() {
 void Wizard::stopMovingHorizontally() {
 	velocity.x = 0.f;
 }
+
 void Wizard::reset() {
-	health = 3;
+	health = 50;
 	shape.setPosition(100.f, 500.f);
+	velocity = { 0.f, 0.f };
+	isJumping = false;
 }
 
 

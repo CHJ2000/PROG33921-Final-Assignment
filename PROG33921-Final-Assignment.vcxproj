@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Boss.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameOverMenu.cpp" />
     <ClCompile Include="InGameUI.cpp" />
@@ -141,6 +142,7 @@
     <ClCompile Include="Wizard.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Boss.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameOverMenu.h" />
     <ClInclude Include="InGameUI.h" />
