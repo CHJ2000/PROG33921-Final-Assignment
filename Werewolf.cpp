@@ -39,7 +39,7 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime, const std:
 
 	for (const auto& obstacle : obstacles) {
 		const sf::FloatRect enemyBounds = shape.getGlobalBounds();
-		const sf::FloatRect obstacleBounds = obstacle.getShape().getGlobalBounds();
+		const sf::FloatRect obstacleBounds = obstacle.getSprite().getGlobalBounds();
 		if (enemyBounds.intersects(obstacleBounds)) {
 			if (direction.x > 0.f && enemyBounds.left + enemyBounds.width > obstacleBounds.left) {
 				shape.setPosition(obstacleBounds.left - enemyBounds.width, enemyBounds.top);

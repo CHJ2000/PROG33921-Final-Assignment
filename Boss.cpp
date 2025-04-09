@@ -41,7 +41,7 @@ void Boss::move(float deltaTime, const sf::Vector2f& playerPosition, const std::
 
 	for (const auto& obstacle : obstacles) {
 		const sf::FloatRect bossBounds = shape.getGlobalBounds();
-		const sf::FloatRect obstacleBounds = obstacle.getShape().getGlobalBounds();
+		const sf::FloatRect obstacleBounds = obstacle.getSprite().getGlobalBounds();
 		if (bossBounds.intersects(obstacleBounds)) {
 			if (direction.x > 0.f && bossBounds.left + bossBounds.width > obstacleBounds.left) {
 				shape.setPosition(obstacleBounds.left - bossBounds.width, bossBounds.top);

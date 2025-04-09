@@ -6,12 +6,12 @@
 
 class Obstacle {
 public: 
-	Obstacle(float x, float y, float width, float height);
-	const sf::RectangleShape& getShape() const;
-	void update();
+	Obstacle(float x, float y, float width, float height, const sf::Texture& texture);
+	const sf::Sprite& getSprite() const;
+	void render(sf::RenderWindow& window) const;
 
 private: 
-	sf::RectangleShape shape;
+	sf::Sprite sprite;
 
 };
 

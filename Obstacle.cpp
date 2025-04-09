@@ -1,15 +1,15 @@
 #include "Obstacle.h"
 
-Obstacle::Obstacle(float x, float y, float width, float height) {
-	shape.setSize(sf::Vector2f(width, height));
-	shape.setFillColor(sf::Color::Yellow);
-	shape.setPosition(x, y);
+Obstacle::Obstacle(float x, float y, float width, float height, const sf::Texture& texture) {
+	sprite.setTexture(texture);
+	sprite.setScale(width / texture.getSize().x, height / texture.getSize().y);;
+	sprite.setPosition(x, y);
 }
 
-const sf::RectangleShape& Obstacle::getShape() const {
-	return shape;
+void Obstacle::render(sf::RenderWindow& window) const {
+	window.draw(sprite);
 }
 
-void Obstacle::update() {
-
+const sf::Sprite& Obstacle::getSprite() const {
+	return sprite;
 }

@@ -20,6 +20,19 @@ GameManager::GameManager()
 		std::cerr << "Failed to load font!" << std::endl;
 	}
 
+	if (!obstacleTexture.loadFromFile("Debug/assets/sprites/tombstone.png")) {
+		std::cerr << "Failed to load obstacle texture!" << std::endl;
+	}
+	else {
+		std::cerr << "Obstacle texture loaded successfully!" << std::endl;
+	}
+
+
+	if (!obstacleTexture.loadFromFile("Debug/assets/sprites/tombstone.png")) {
+		std::cerr << "Failed to load obstacle texture!" << std::endl;
+	}
+
+
 	mainMenuUI = new MainMenu(font);
 	inGameUI = new InGameUI(font);
 	gameOverUI = new GameOverMenu(font);
@@ -216,20 +229,25 @@ void GameManager::initializeEntities(float playerX) {
 	const float obstacleHeight = 50.f;
 	const float spacing = 600.f;
 
+	sf::FloatRect cameraBounds(camera.getCenter().x - camera.getSize().x / 2,
+		camera.getCenter().y - camera.getSize().y / 2,
+		camera.getSize().x,
+		camera.getSize().y);
+
 	float obstacleX1 = playerX + 400.f;
 	float obstacleY1 = ground.getPosition().y - obstacleHeight;
-	Obstacle staticObstacle1(obstacleX1, obstacleY1, obstacleWidth, obstacleHeight);
+	Obstacle staticObstacle1(obstacleX1, obstacleY1, obstacleWidth, obstacleHeight, obstacleTexture);
 	obstacles.push_back(staticObstacle1);
 
 	float obstacleX2 = obstacleX1 + spacing;
 	float obstacleY2 = ground.getPosition().y - obstacleHeight;
-	Obstacle staticObstacle2(obstacleX2, obstacleY2, obstacleWidth, obstacleHeight);
+	Obstacle staticObstacle2(obstacleX2, obstacleY2, obstacleWidth, obstacleHeight, obstacleTexture);
 	obstacles.push_back(staticObstacle2);
 
 	if (enemies.empty()) {
-		float enemyX = (obstacles[0].getShape().getPosition().x + obstacles[1].getShape().getPosition().x) / 2.f;
-		float patrolStartX = obstacles[0].getShape().getPosition().x + obstacleWidth;
-		float patrolEndX = obstacles[1].getShape().getPosition().x - obstacleWidth;
+		float enemyX = (obstacles[0].getSprite().getPosition().x + obstacles[1].getSprite().getPosition().x) / 2.f;
+		float patrolStartX = obstacles[0].getSprite().getPosition().x + obstacleWidth;
+		float patrolEndX = obstacles[1].getSprite().getPosition().x - obstacleWidth;
 
 		Werewolf staticEnemy(patrolStartX, 500.f, patrolEndX);
 		enemies.push_back(staticEnemy);
@@ -242,13 +260,18 @@ void GameManager::spawnEntities(float playerX) {
 	const float spacing = 800.f;
 	const float offSceenDistance = 1500.f;
 
-	while (obstacles.size() < 2 || obstacles.back().getShape().getPosition().x < playerX + offSceenDistance) {
+	sf::FloatRect cameraBounds(camera.getCenter().x - camera.getSize().x / 2,
+		camera.getCenter().y - camera.getSize().y / 2,
+		camera.getSize().x,
+		camera.getSize().y);
+
+	while (obstacles.size() < 2 || obstacles.back().getSprite().getPosition().x < playerX + offSceenDistance) {
 		float obstacleX = obstacles.empty()
 			? playerX + offSceenDistance :
-			obstacles.back().getShape().getPosition().x + spacing;
+			obstacles.back().getSprite().getPosition().x + spacing;
 		float obstacleY = ground.getPosition().y - obstacleHeight;
 
-		Obstacle newObstacle(obstacleX, obstacleY, obstacleWidth, obstacleHeight);
+		Obstacle newObstacle(obstacleX, obstacleY, obstacleWidth, obstacleHeight, obstacleTexture);
 		obstacles.push_back(newObstacle);
 		std::cerr << "Obstacle spawned off-screen at: " << obstacleX << ", " << obstacleY << std::endl;
 
@@ -256,16 +279,16 @@ void GameManager::spawnEntities(float playerX) {
 		Obstacle* secondObstacle = nullptr;
 
 		for(size_t i = 0; i < obstacles.size() - 1; ++i) {
-			if (obstacles[i].getShape().getPosition().x > playerX) {
+			if (obstacles[i].getSprite().getPosition().x > playerX) {
 				firstObstacle = &obstacles[i];
 				secondObstacle = &obstacles[i + 1];
 				break;
 			}
 		}
 		if (firstObstacle && secondObstacle && enemies.empty()) {
-			float enemyX = (firstObstacle->getShape().getPosition().x + secondObstacle->getShape().getPosition().x) / 2.f;
-			float patrolStartX = firstObstacle->getShape().getPosition().x + obstacleWidth;
-			float patrolEndX = secondObstacle->getShape().getPosition().x - obstacleWidth;
+			float enemyX = (firstObstacle->getSprite().getPosition().x + secondObstacle->getSprite().getPosition().x) / 2.f;
+			float patrolStartX = firstObstacle->getSprite().getPosition().x + obstacleWidth;
+			float patrolEndX = secondObstacle->getSprite().getPosition().x - obstacleWidth;
 
 			Werewolf newEnemy(patrolStartX, 500.f, patrolEndX);
 			enemies.push_back(newEnemy);
@@ -281,7 +304,7 @@ void GameManager::cleanUpEntities(float playerX) {
 
 	obstacles.erase(std::remove_if(obstacles.begin(), obstacles.end(),
 		[playerX, cleanupThreshold](const Obstacle& obstacle) {
-			return obstacle.getShape().getPosition().x < playerX - cleanupThreshold;
+			return obstacle.getSprite().getPosition().x < playerX - cleanupThreshold;
 		}), obstacles.end());
 
 	enemies.erase(std::remove_if(enemies.begin(), enemies.end(),
@@ -347,34 +370,41 @@ void GameManager::render() {
 		window.draw(ground);
 		window.draw(player.getShape());
 
+		sf::FloatRect cameraBounds(camera.getCenter().x - camera.getSize().x / 2,
+			camera.getCenter().y - camera.getSize().y / 2,
+			camera.getSize().x,
+			camera.getSize().y);
+
 		for (const auto& obstacle : obstacles) {
-			window.draw(obstacle.getShape());
+			if (cameraBounds.intersects(obstacle.getSprite().getGlobalBounds())) {
+				obstacle.render(window); // Render only obstacles visible in the camera's view
+			}
 		}
+			for (const auto& enemy : enemies) {
+				window.draw(enemy.getShape());
+			}
+			for (const auto& projectile : projectiles) {
+				window.draw(projectile.getShape());
+			}
+			for (const auto& boss : bosses) {
+				window.draw(boss.getShape());
+			}
 
-		for (const auto& enemy : enemies) {
-			window.draw(enemy.getShape());
-		}
-		for (const auto& projectile : projectiles) {
-			window.draw(projectile.getShape());
-		}
-		for (const auto& boss : bosses) {
-			window.draw(boss.getShape());
-		}
-
-		renderBossHealth(window);
-		float timeElapsed = gameClock.getElapsedTime().asSeconds();
-		inGameUI->update(score, timeElapsed, player.getHealth());
-		inGameUI->render(window);
-	} else if (currentState == GameState::WinScreen){
+			renderBossHealth(window);
+			float timeElapsed = gameClock.getElapsedTime().asSeconds();
+			inGameUI->update(score, timeElapsed, player.getHealth());
+			inGameUI->render(window);
+	}
+	else if (currentState == GameState::WinScreen) {
 		window.clear();
-		if(winScreenUI) {
+		if (winScreenUI) {
 			winScreenUI->render(window);
 			std::cerr << "Rendering Win Screen ..." << std::endl;
 		}
 		else {
 			std::cerr << "Win Screen UI is not initialized!" << std::endl;
 		}
-		
+
 	}
 	else if (currentState == GameState::GameOver) {
 		window.clear();
@@ -392,7 +422,7 @@ void GameManager::checkCollisions() {
 		
 		bool collisionDetected = false;
 		for (const auto& obstacle : obstacles) {
-			if (projectileBounds.intersects(obstacle.getShape().getGlobalBounds())) {
+			if (projectileBounds.intersects(obstacle.getSprite().getGlobalBounds())) {
 				collisionDetected = true;
 				break;
 			}
@@ -406,7 +436,7 @@ void GameManager::checkCollisions() {
 
 	const sf::FloatRect playerBounds = player.getShape().getGlobalBounds();
 	for (const auto& obstacle : obstacles) {
-		const sf::FloatRect obstacleBounds = obstacle.getShape().getGlobalBounds();
+		const sf::FloatRect obstacleBounds = obstacle.getSprite().getGlobalBounds();
 
 		if (playerBounds.intersects(obstacleBounds)) {
 			if (playerBounds.top + playerBounds.height <= obstacleBounds.top + 10.f &&
