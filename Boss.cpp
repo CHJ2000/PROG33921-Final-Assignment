@@ -5,7 +5,7 @@
 
 
 Boss::Boss(float x, float y, float width, float height, float health, float attackDamage) 
-	: health(health), attackDamage(attackDamage), patrolStart(x - 100.f, y), patrolEnd(x + 100.f, y), isBoss(true){
+	: health(static_cast<int>(health)), attackDamage(attackDamage), patrolStart(x - 100.f, y), patrolEnd(x + 100.f, y), isBoss(true), movingToEnd(false){
 	shape.setSize(sf::Vector2f(width, height));
 	shape.setFillColor(sf::Color::White);
 	shape.setPosition(x, y);
@@ -55,7 +55,7 @@ void Boss::move(float deltaTime, const sf::Vector2f& playerPosition, const std::
 }
 
 void Boss::takeDamage(float damage) {
-	health -= damage;
+	health -= static_cast<int>(damage);
 	if (health < 0) {
 		health = 0;
 	}
@@ -66,7 +66,7 @@ bool Boss::isAlive() const {
 }
 
 float Boss::getHealth() const {
-	return health;
+	return static_cast<float>(health);
 }
 
 bool Boss::isDefeated() const {

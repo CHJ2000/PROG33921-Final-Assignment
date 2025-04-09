@@ -8,7 +8,6 @@ class Boss {
 public:
 	Boss(float x, float y, float width, float heigth, float health, float attackDamage);
 	void move(float deltaTime, const sf::Vector2f& playerPosition, const std::vector<Obstacle>& obstacles);
-	void setPatrol(float start, float end);
 	void takeDamage(float damage);
 	bool isAlive() const;
 	float getHealth() const;
