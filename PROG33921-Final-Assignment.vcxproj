@@ -139,6 +139,7 @@
     <ClCompile Include="PROG33921-Final-Assignment.cpp" />
     <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="Werewolf.cpp" />
+    <ClCompile Include="WinScreenUI.cpp" />
     <ClCompile Include="Wizard.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +151,7 @@
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Projectile.h" />
     <ClInclude Include="Werewolf.h" />
+    <ClInclude Include="WinScreenUI.h" />
     <ClInclude Include="Wizard.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

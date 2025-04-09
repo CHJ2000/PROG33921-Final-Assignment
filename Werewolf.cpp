@@ -13,7 +13,7 @@ void Werewolf::update(const sf::CircleShape& player, float deltaTime, const std:
 	sf::Vector2f direction;
 	float length;
 
-	float range = 300.f;
+	float range = 150.f;
 
 	sf::Vector2f playerDirection = player.getPosition() - shape.getPosition();
 	float playerDistance = std::sqrt(playerDirection.x * playerDirection.x + playerDirection.y * playerDirection.y);

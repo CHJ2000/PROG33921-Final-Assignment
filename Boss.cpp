@@ -69,6 +69,10 @@ float Boss::getHealth() const {
 	return health;
 }
 
+bool Boss::isDefeated() const {
+	return health <= 0.f;
+}
+
 bool Boss::getIsBoss() const {
 	return isBoss;
 }

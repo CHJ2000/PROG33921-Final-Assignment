@@ -10,11 +10,13 @@
 #include "GameOverMenu.h"
 #include "Obstacle.h"
 #include "Boss.h"
+#include "WinScreenUI.h"
 
 
 class GameManager {
 public:
 	GameManager();
+	~GameManager();
 	void run();
 
 private:
@@ -36,7 +38,7 @@ private:
 	void cleanUpEntities(float playerX);
 	void updateGround(float playerX);
 	void resetGame();
-	enum class GameState {Playing, GameOver, MainMenu};
+	enum class GameState {Playing, GameOver, MainMenu, WinScreen};
 	GameState currentState = GameState::Playing;
 
 	sf::RenderWindow window;
@@ -53,10 +55,13 @@ private:
 	MainMenu* mainMenuUI;
 	InGameUI* inGameUI;
 	GameOverMenu* gameOverUI;
+	WinScreenUI* winScreenUI;
 
+	bool bossSpawned;
 	int score;
 	sf::Clock gameClock;
-	float finalTime = 0;
+	float finalTime;
+	int finalScore;
 
 };
 #endif

@@ -12,6 +12,7 @@ public:
 	void takeDamage(float damage);
 	bool isAlive() const;
 	float getHealth() const;
+	bool isDefeated() const;
 	bool getIsBoss() const;
 	sf::RectangleShape getShape() const;
 
@@ -22,7 +23,7 @@ private:
 	sf::Vector2f patrolStart;
 	sf::Vector2f patrolEnd;
 	bool isBoss = true;
-	bool movingToEnd;
+	bool movingToEnd = false;
 };
 
 #endif

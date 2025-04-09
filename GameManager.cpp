@@ -4,7 +4,7 @@
 #include "Boss.h"
 
 GameManager::GameManager()
-	: window(sf::VideoMode(1000, 600), "Wizards 'n Werewolves"), player(100.f, 500.f) {
+	: window(sf::VideoMode(1000, 600), "Wizards 'n Werewolves"), player(100.f, 500.f), bossSpawned(false) {
 	window.setFramerateLimit(60);
 
 	std::ifstream file("Debug/assets/fonts/BlackwoodCastle.ttf");
@@ -23,6 +23,7 @@ GameManager::GameManager()
 	mainMenuUI = new MainMenu(font);
 	inGameUI = new InGameUI(font);
 	gameOverUI = new GameOverMenu(font);
+	winScreenUI = new WinScreenUI(font);
 	currentState = GameState::MainMenu;
 
 	camera.setSize(static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y));
@@ -33,7 +34,16 @@ GameManager::GameManager()
 	ground.setPosition(0.f, static_cast<float>(window.getSize().y) - ground.getSize().y);
 
 	score = 0;
+	finalScore = 0;
+	finalTime = 0.f;
 
+}
+
+GameManager::~GameManager() {
+	delete mainMenuUI;
+	delete inGameUI;
+	delete gameOverUI;
+	delete winScreenUI; 
 }
 
 void GameManager::run() {
@@ -183,12 +193,13 @@ void GameManager::update(float deltaTime) {
 		projectile.update(deltaTime);
 	}
 
-	for (auto& boss : bosses) {
-		boss.move(deltaTime, player.getShape().getPosition(), obstacles);
+	if (currentState == GameState::Playing && score >= 500 && !bossSpawned) {
+		spawnBoss(player.getShape().getPosition().x);
+		bossSpawned = true;
 	}
 
-	if (score >= 500 && bosses.empty()) {
-		spawnBoss(player.getShape().getPosition().x);
+	for (auto& boss : bosses) {
+		boss.move(deltaTime, player.getShape().getPosition(), obstacles);
 	}
 
 	checkCollisions();
@@ -280,13 +291,18 @@ void GameManager::cleanUpEntities(float playerX) {
 }
 
 void GameManager::spawnBoss(float playerX) {
-	if (score >= 500 && bosses.empty()) {
+	if (!bossSpawned&& currentState == GameState::Playing) {
 		const float bossWidth = 100.f;
 		const float bossHeight = 200.f;
 		sf::Vector2f bossPosition(playerX + 1000.f, ground.getPosition().y - bossHeight);
 
 		Boss newBoss(bossPosition.x, bossPosition.y, bossWidth, bossHeight, 50.f, 0.f);
 		bosses.push_back(newBoss);
+		bossSpawned = true;
+		std::cerr << "Boss spawned at position: " << bossPosition.x << ", " << bossPosition.y << std::endl;
+	}
+	else {
+		std::cerr << "Boss already spawned. No new Boss created." << std::endl;
 	}
 }
 
@@ -325,31 +341,48 @@ void GameManager::updateGround(float playerX) {
 
 void GameManager::render() {
 	window.clear();
-	window.setView(camera);
+	if (currentState == GameState::Playing) {
+		window.setView(camera);
 
-	window.draw(ground);
-	window.draw(player.getShape());
+		window.draw(ground);
+		window.draw(player.getShape());
 
-	for (const auto& obstacle : obstacles) {
-		window.draw(obstacle.getShape());
+		for (const auto& obstacle : obstacles) {
+			window.draw(obstacle.getShape());
+		}
+
+		for (const auto& enemy : enemies) {
+			window.draw(enemy.getShape());
+		}
+		for (const auto& projectile : projectiles) {
+			window.draw(projectile.getShape());
+		}
+		for (const auto& boss : bosses) {
+			window.draw(boss.getShape());
+		}
+
+		renderBossHealth(window);
+		float timeElapsed = gameClock.getElapsedTime().asSeconds();
+		inGameUI->update(score, timeElapsed, player.getHealth());
+		inGameUI->render(window);
+	} else if (currentState == GameState::WinScreen){
+		window.clear();
+		if(winScreenUI) {
+			winScreenUI->render(window);
+			std::cerr << "Rendering Win Screen ..." << std::endl;
+		}
+		else {
+			std::cerr << "Win Screen UI is not initialized!" << std::endl;
+		}
+		
 	}
+	else if (currentState == GameState::GameOver) {
+		window.clear();
 
-	for (const auto& enemy : enemies) {
-		window.draw(enemy.getShape());
+		if (gameOverUI) {
+			gameOverUI->display(window, finalScore, finalTime);
+		}
 	}
-	for (const auto& projectile : projectiles) {
-		window.draw(projectile.getShape());
-	}
-	for (const auto& boss : bosses) {
-		window.draw(boss.getShape());
-	}
-
-	renderBossHealth(window);
-
-	float timeElapsed = gameClock.getElapsedTime().asSeconds();
-	inGameUI->update(score, timeElapsed, player.getHealth());
-
-	inGameUI->render(window);
 	window.display();
 }
 
@@ -481,16 +514,38 @@ void GameManager::checkCollisions() {
 	bosses.erase(std::remove_if(bosses.begin(), bosses.end(), [](const Boss& boss) {
 		return !boss.isAlive();
 	}), bosses.end());
+
+	if (bosses.empty()) {
+		bossSpawned = false;
+	}
+
+	for (auto& boss : bosses){
+
+		if (!boss.isAlive()) {
+			currentState = GameState::WinScreen;
+			finalScore = score;
+			finalTime = gameClock.getElapsedTime().asSeconds();
+
+			winScreenUI->update(finalScore, finalTime);
+			bosses.clear();
+			std::cerr << " Boss defeated! Transitioning to Win Screen..." << std::endl;
+			return;
+		}
+	}
 }
 
 void GameManager::resetGame() {
 	score = 0;
+	finalScore = 0;
+	finalTime = 0.f;
+	bossSpawned = false;
 	player.reset();
 	gameClock.restart();
 
 	obstacles.clear();
 	enemies.clear();
 	projectiles.clear();
+	bosses.clear();
 
 	initializeEntities(player.getShape().getPosition().x);
 	spawnEntities(player.getShape().getPosition().x);

@@ -28,7 +28,7 @@ private:
 	sf::Vector2f velocity;
 	bool isJumping;
 	const float gravity = 500.f;
-	int health = 50.f;
+	int health = 50;
 };
 
 #endif 
