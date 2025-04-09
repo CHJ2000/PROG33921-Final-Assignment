@@ -27,10 +27,17 @@ GameManager::GameManager()
 		std::cerr << "Obstacle texture loaded successfully!" << std::endl;
 	}
 
-
 	if (!obstacleTexture.loadFromFile("Debug/assets/sprites/tombstone.png")) {
 		std::cerr << "Failed to load obstacle texture!" << std::endl;
 	}
+
+	if (!projectileTexture.loadFromFile("Debug/assets/sprites/magicProjectile.png")) {
+		std::cerr << "Failed to load projectile texture!" << std::endl;
+	}
+	else {
+		std::cerr << "Projectile texture loaded successfully!" << std::endl;
+	}
+
 
 
 	mainMenuUI = new MainMenu(font);
@@ -176,7 +183,7 @@ void GameManager::handleEvents() {
 			window.close();
 
 		if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
-			player.attack(projectiles);
+			player.attack(projectiles, projectileTexture);
 		}
 	}
 }
@@ -384,7 +391,7 @@ void GameManager::render() {
 				window.draw(enemy.getShape());
 			}
 			for (const auto& projectile : projectiles) {
-				window.draw(projectile.getShape());
+				projectile.render(window);
 			}
 			for (const auto& boss : bosses) {
 				window.draw(boss.getShape());
@@ -418,7 +425,7 @@ void GameManager::render() {
 
 void GameManager::checkCollisions() {
 	for (auto it = projectiles.begin(); it != projectiles.end();) {
-		const sf::FloatRect projectileBounds = it->getShape().getGlobalBounds();
+		const sf::FloatRect projectileBounds = it->getSprite().getGlobalBounds();
 		
 		bool collisionDetected = false;
 		for (const auto& obstacle : obstacles) {
@@ -487,7 +494,7 @@ void GameManager::checkCollisions() {
 
 	for (auto& enemy : enemies) {
 		for (auto it = projectiles.begin(); it != projectiles.end();) {
-			if (it->getShape().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
+			if (it->getSprite().getGlobalBounds().intersects(enemy.getShape().getGlobalBounds())) {
 				float damageAmount = 5.f;
 				enemy.takeDamage(damageAmount);
 				score += enemy.getIsBoss() ? 30 : 15;
@@ -504,7 +511,7 @@ void GameManager::checkCollisions() {
 
 	for (auto& boss : bosses) {
 		for (auto it = projectiles.begin(); it != projectiles.end();) {
-			if (it->getShape().getGlobalBounds().intersects(boss.getShape().getGlobalBounds())) {
+			if (it->getSprite().getGlobalBounds().intersects(boss.getShape().getGlobalBounds())) {
 				boss.takeDamage(5.f);
 				score += boss.isAlive() ? 30 : 100;
 

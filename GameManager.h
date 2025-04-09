@@ -51,6 +51,7 @@ private:
 	std::vector<Boss> bosses;
 	sf::RectangleShape ground;
 	sf::Texture obstacleTexture;
+	sf::Texture projectileTexture;
 
 
 	MainMenu* mainMenuUI;

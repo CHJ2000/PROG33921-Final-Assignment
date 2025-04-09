@@ -13,7 +13,7 @@ public:
 	void move(sf::Vector2f direction, float deltaTime, float speed);
 	void jump();
 	void update(float deltaTime);
-	void attack(std::vector<Projectile>& projectiles);
+	void attack(std::vector<Projectile>& projectiles, const sf::Texture& projectileTexture);
 	void takeDamage(float damage);
 	void stopFalling();
 	void stopMovingHorizontally();

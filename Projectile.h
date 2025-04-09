@@ -5,13 +5,15 @@
 
 class Projectile {
 public:
-	Projectile(float startX, float startY, float speed);
+	Projectile(float startX, float startY, const sf::Texture& texture);
+	
 	void update(float deltaTime);
-	const sf::CircleShape& getShape() const;
+	void render(sf::RenderWindow& window) const;
+	const sf::Sprite& getSprite() const;
 
 private:
-	sf::CircleShape shape;
-	float speed;
+	sf::Sprite sprite;
+	sf::Vector2f velocity;
 };
 
 #endif

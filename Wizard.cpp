@@ -32,11 +32,11 @@ void Wizard::update(float deltaTime) {
 	}
 }
 
-void Wizard::attack(std::vector<Projectile>& projectiles) {
+void Wizard::attack(std::vector<Projectile>& projectiles, const sf::Texture& projectileTexture) {
 	Projectile newProjectile(
 		shape.getPosition().x + shape.getRadius(),
 		shape.getPosition().y + shape.getRadius(),
-		300.f
+		projectileTexture
 	);
 	projectiles.push_back(newProjectile);
 }

@@ -1,16 +1,19 @@
 #include "Projectile.h"
 
-Projectile::Projectile(float startX, float startY, float speed)
-	:speed(speed) {
-	shape.setRadius(5.f);
-	shape.setFillColor(sf::Color::Yellow);
-	shape.setPosition(startX, startY);
+Projectile::Projectile(float startX, float startY, const sf::Texture& texture){
+	sprite.setTexture(texture);
+	sprite.setPosition(startX, startX);
+	velocity = sf::Vector2f(500.f, 0.f);
 }
 
 void Projectile::update(float deltaTime) {
-	shape.move(speed * deltaTime, 0.f);
+	sprite.move(velocity * deltaTime);
 }
 
-const sf::CircleShape& Projectile::getShape() const {
-	return shape;
+void Projectile::render(sf::RenderWindow& window) const {
+	window.draw(sprite);
+}
+
+const sf::Sprite& Projectile::getSprite() const {
+	return sprite;
 }
